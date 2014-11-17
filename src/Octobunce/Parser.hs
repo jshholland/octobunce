@@ -24,7 +24,7 @@ ircMessage = do
     space
     args <- ircArgs
     endOfLine
-    return $ IrcMessage
+    return IrcMessage
         { ircMsgSource  = source
         , ircMsgCommand = command
         , ircMsgArgs    = args
