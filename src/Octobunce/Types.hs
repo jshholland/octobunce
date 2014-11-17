@@ -1,3 +1,13 @@
+{-|
+Module: Octobunce.Types
+Description: Define types for the Octobunce IRC bot library
+Copyright: © 2014 Josh Holland
+License: MIT
+Maintainer: josh@inv.alid.pw
+Stability: experimental
+Portability: any
+-}
+
 module Octobunce.Types
     ( IrcMessage(..)
     , IrcCommand(..)
@@ -8,13 +18,16 @@ import Data.ByteString     (ByteString)
 import Control.Applicative
 import Control.Monad.Trans
 
+-- | Represent an IRC message, in either direction.
 data IrcMessage = IrcMessage
-    { ircMsgSource  :: ByteString
-    , ircMsgCommand :: IrcCommand
-    , ircMsgArgs    :: [ByteString]
+    { ircMsgSource  :: ByteString -- ^ The prefixed source part of the message.
+    , ircMsgCommand :: IrcCommand -- ^ The command or numeric response code.
+    , ircMsgArgs    :: [ByteString] -- ^ Any arguments to the command.
     } deriving Show
 
-data IrcCommand = IrcNumeric Int
+-- | Represent an IRC command or numeric response code.
+data IrcCommand = IrcNumeric Int -- ^ A numeric response code; should be in [0,1000)
+                | IrcUnknown ByteString -- ^ Unrecognised command.
                 | IrcPass
                 | IrcNick
                 | IrcUser
@@ -60,7 +73,6 @@ data IrcCommand = IrcNumeric Int
                 | IrcWallops
                 | IrcUserhost
                 | IrcIson
-                | IrcUnknown ByteString
     deriving Show
 
 data Nick bot = NickBS ByteString
