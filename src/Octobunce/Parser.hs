@@ -44,7 +44,7 @@ ircCommandNumeric = do
     d1 <- digitToInt <$> digit
     d2 <- digitToInt <$> digit
     d3 <- digitToInt <$> digit
-    return $ IrcNumeric $ 100*d1 + 10*d2 + d3    
+    return $ IrcNumeric $ 100*d1 + 10*d2 + d3
 
 -- | Parse an IRC command.
 ircCommandTextual :: Parser IrcCommand
