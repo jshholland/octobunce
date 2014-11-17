@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Octobunce.Parser where
+module Octobunce.Parser
+    ( ircMessage
+    ) where
 
 import           Data.Attoparsec.ByteString.Char8
 import qualified Data.Attoparsec.ByteString.Char8 as A
@@ -10,6 +12,8 @@ import           Data.Char                        (digitToInt)
 import           Control.Applicative              ((*>), (<$>))
 import           Octobunce.Types
 
+-- | Parse a full IRC message line, including the line ending. Mostly based on
+-- RFC 2812 § 2.3.1.
 ircMessage :: Parser IrcMessage
 ircMessage = do
     source <- option "" $ do
@@ -26,12 +30,15 @@ ircMessage = do
         , ircMsgArgs    = args
         }
 
+-- | Parse the initial source part of an IRC line.
 ircSource :: Parser ByteString
 ircSource = char ':' *> takeWhile1 (not . isSpace)
 
+-- | Parse the command or numeric response part of an IRC line.
 ircCommand :: Parser IrcCommand
 ircCommand = choice [ircCommandNumeric, ircCommandTextual]
 
+-- | Parse a numeric IRC response code.
 ircCommandNumeric :: Parser IrcCommand
 ircCommandNumeric = do
     d1 <- digitToInt <$> digit
@@ -39,6 +46,7 @@ ircCommandNumeric = do
     d3 <- digitToInt <$> digit
     return $ IrcNumeric $ 100*d1 + 10*d2 + d3    
 
+-- | Parse an IRC command.
 ircCommandTextual :: Parser IrcCommand
 ircCommandTextual = do
     name <- many1 letter_ascii
@@ -90,6 +98,7 @@ ircCommandTextual = do
         "ISON"     -> return IrcIson
         _          -> return $ IrcUnknown $ pack name
 
+-- | Parse the arguments for the IRC command.
 ircArgs :: Parser [ByteString]
 ircArgs = do
     args <- ircWord `sepBy` space
@@ -99,12 +108,14 @@ ircArgs = do
         return [trail]
     return $ args ++ trail
 
+-- | Parse an individual IRC word argument.
 ircWord :: Parser ByteString
 ircWord = do
     first <- ircChar
     rest <- many' $ choice [ircChar, char ':']
     return $ pack (first:rest)
 
+-- | Parse the trailing part of IRC arguments, not including the initial colon.
 ircTrailing :: Parser ByteString
 ircTrailing = A.takeWhile isTrailChar
   where
@@ -112,9 +123,12 @@ ircTrailing = A.takeWhile isTrailChar
                   || c == ' '
                   || c == ':'
 
+-- | Parse a single IRC character, as defined by 'isIrcChar'.
 ircChar :: Parser Char
 ircChar = A.satisfy isIrcChar
 
+-- | Test whether a 'Char' is valid in an IRC word, i.e. it is not null, colon,
+-- space or a newline/carriage return.
 isIrcChar :: Char -> Bool
 isIrcChar c =  c /= '\0'
             && c /= ' '
