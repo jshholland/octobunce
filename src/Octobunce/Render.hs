@@ -82,7 +82,7 @@ renderCommand IrcWallops      = "WALLOPS"
 renderCommand IrcUserhost     = "USERHOST"
 renderCommand IrcIson         = "ISON"
 
-renderArgs :: [ByteString] -> ByteString
-renderArgs [] = ""
-renderArgs [x] = BS.cons ':' x
-renderArgs (x:xs) = x `BS.append` renderArgs xs
+renderArgs :: [ByteString] -> [ByteString]
+renderArgs [] = []
+renderArgs [x] = [':' `BS.cons` x]
+renderArgs (x:xs) = x : renderArgs xs
