@@ -3,7 +3,7 @@
 
 name:                octobunce
 version:             0.0.0.0
-synopsis:            Yet another IRC bot
+synopsis:            Yet another IRC bot library
 -- description:         
 license:             MIT
 license-file:        LICENSE
