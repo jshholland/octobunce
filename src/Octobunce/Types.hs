@@ -1,10 +1,10 @@
 {-|
-Module: Octobunce.Types
+Module:      Octobunce.Types
 Description: Define types for the Octobunce IRC bot library
-Copyright: © 2014 Josh Holland
-License: MIT
-Maintainer: josh@inv.alid.pw
-Stability: experimental
+Copyright:   © 2014 Josh Holland
+License:     MIT
+Maintainer:  josh@inv.alid.pw
+Stability:   experimental
 Portability: any
 -}
 

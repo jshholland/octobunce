@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module: Octobunce.Parser
+Module:      Octobunce.Parser
 Description: Parse IRC messages
-Copyright: © 2014 Josh Holland
-License: MIT
-Maintainer: josh@inv.alid.pw
-Stability: experimental
+Copyright:   © 2014 Josh Holland
+License:     MIT
+Maintainer:  josh@inv.alid.pw
+Stability:   experimental
 Portability: any
 -}
 
