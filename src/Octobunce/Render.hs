@@ -9,80 +9,93 @@ Portability: any
 -}
 module Octobunce.Render
     ( renderMessage
+    , renderMessage'
     ) where
 
-import           Data.ByteString.Char8 (ByteString)
-import qualified Data.ByteString.Char8 as BS
+import           Data.ByteString         (ByteString)
+import qualified Data.ByteString         as BS
+import           Data.ByteString.Lazy    (toStrict)
+import           Data.ByteString.Builder
+import           Data.Monoid
+import           Data.List               (intersperse)
 import           Octobunce.Types
 
--- | Render an IrcMessage ready for transmission.
+-- | Render an 'IrcMessage' ready for transmission.
 renderMessage :: IrcMessage -> ByteString
-renderMessage msg
-    | BS.null $ ircMsgSource msg = renderMessageNoSource msg
+renderMessage = toStrict . toLazyByteString . renderMessage'
+
+-- | Get the raw 'Builder' for use with 'hPutBuilder'.
+renderMessage' :: IrcMessage -> Builder
+renderMessage' msg
+    | BS.null (ircMsgSource msg) = renderMessageNoSource msg
     | otherwise                  = renderMessageWithSource msg
 
-renderMessageNoSource :: IrcMessage -> ByteString
-renderMessageNoSource (IrcMessage _src cmd args) = BS.unwords $ cmd':args'
+renderMessageNoSource :: IrcMessage -> Builder
+renderMessageNoSource (IrcMessage _src cmd args) = unwordsB (cmd':args') <> byteString "\r\n"
   where
     cmd'  = renderCommand cmd
     args' = renderArgs args
 
-renderMessageWithSource (IrcMessage src cmd args) = BS.unwords $ src':cmd':args'
+renderMessageWithSource :: IrcMessage -> Builder
+renderMessageWithSource (IrcMessage src cmd args) = unwordsB (src':cmd':args') <> byteString "\r\n"
   where
-    src'  = ':':src
+    src'  = charUtf8 ':' <> byteString src
     cmd'  = renderCommand cmd
     args' = renderArgs args
 
-renderCommand :: IrcCommand -> ByteString
-renderCommand (IrcNumeric n)  = BS.pack $ show n
-renderCommand (IrcUnknown bs) = bs
-renderCommand IrcPass         = "PASS"
-renderCommand IrcNick         = "NICK"
-renderCommand IrcUser         = "USER"
-renderCommand IrcOper         = "OPER"
-renderCommand IrcMode         = "MODE"
-renderCommand IrcService      = "SERVICE"
-renderCommand IrcQuit         = "QUIT"
-renderCommand IrcSquit        = "SQUIT"
-renderCommand IrcJoin         = "JOIN"
-renderCommand IrcPart         = "PART"
-renderCommand IrcTopic        = "TOPIC"
-renderCommand IrcNames        = "NAMES"
-renderCommand IrcList         = "LIST"
-renderCommand IrcInvite       = "INVITE"
-renderCommand IrcKick         = "KICK"
-renderCommand IrcPrivmsg      = "PRIVMSG"
-renderCommand IrcNotice       = "NOTICE"
-renderCommand IrcMotd         = "MOTD"
-renderCommand IrcLusers       = "LUSERS"
-renderCommand IrcVersion      = "VERSION"
-renderCommand IrcStats        = "STATS"
-renderCommand IrcLinks        = "LINKS"
-renderCommand IrcTime         = "TIME"
-renderCommand IrcConnect      = "CONNECT"
-renderCommand IrcTrace        = "TRACE"
-renderCommand IrcAdmin        = "ADMIN"
-renderCommand IrcInfo         = "INFO"
-renderCommand IrcServlist     = "SERVLIST"
-renderCommand IrcSquery       = "SQUERY"
-renderCommand IrcWho          = "WHO"
-renderCommand IrcWhois        = "WHOIS"
-renderCommand IrcWhowas       = "WHOWAS"
-renderCommand IrcKill         = "KILL"
-renderCommand IrcPing         = "PING"
-renderCommand IrcPong         = "PONG"
-renderCommand IrcError        = "ERROR"
-renderCommand IrcAway         = "AWAY"
-renderCommand IrcRehash       = "REHASH"
-renderCommand IrcDie          = "DIE"
-renderCommand IrcRestart      = "RESTART"
-renderCommand IrcSummon       = "SUMMON"
-renderCommand IrcUsers        = "USERS"
-renderCommand IrcWallops      = "WALLOPS"
-renderCommand IrcUserhost     = "USERHOST"
-renderCommand IrcIson         = "ISON"
+renderCommand :: IrcCommand -> Builder
+renderCommand (IrcNumeric n)  = intDec n
+renderCommand (IrcUnknown bs) = byteString bs
+renderCommand IrcPass         = byteString "PASS"
+renderCommand IrcNick         = byteString "NICK"
+renderCommand IrcUser         = byteString "USER"
+renderCommand IrcOper         = byteString "OPER"
+renderCommand IrcMode         = byteString "MODE"
+renderCommand IrcService      = byteString "SERVICE"
+renderCommand IrcQuit         = byteString "QUIT"
+renderCommand IrcSquit        = byteString "SQUIT"
+renderCommand IrcJoin         = byteString "JOIN"
+renderCommand IrcPart         = byteString "PART"
+renderCommand IrcTopic        = byteString "TOPIC"
+renderCommand IrcNames        = byteString "NAMES"
+renderCommand IrcList         = byteString "LIST"
+renderCommand IrcInvite       = byteString "INVITE"
+renderCommand IrcKick         = byteString "KICK"
+renderCommand IrcPrivmsg      = byteString "PRIVMSG"
+renderCommand IrcNotice       = byteString "NOTICE"
+renderCommand IrcMotd         = byteString "MOTD"
+renderCommand IrcLusers       = byteString "LUSERS"
+renderCommand IrcVersion      = byteString "VERSION"
+renderCommand IrcStats        = byteString "STATS"
+renderCommand IrcLinks        = byteString "LINKS"
+renderCommand IrcTime         = byteString "TIME"
+renderCommand IrcConnect      = byteString "CONNECT"
+renderCommand IrcTrace        = byteString "TRACE"
+renderCommand IrcAdmin        = byteString "ADMIN"
+renderCommand IrcInfo         = byteString "INFO"
+renderCommand IrcServlist     = byteString "SERVLIST"
+renderCommand IrcSquery       = byteString "SQUERY"
+renderCommand IrcWho          = byteString "WHO"
+renderCommand IrcWhois        = byteString "WHOIS"
+renderCommand IrcWhowas       = byteString "WHOWAS"
+renderCommand IrcKill         = byteString "KILL"
+renderCommand IrcPing         = byteString "PING"
+renderCommand IrcPong         = byteString "PONG"
+renderCommand IrcError        = byteString "ERROR"
+renderCommand IrcAway         = byteString "AWAY"
+renderCommand IrcRehash       = byteString "REHASH"
+renderCommand IrcDie          = byteString "DIE"
+renderCommand IrcRestart      = byteString "RESTART"
+renderCommand IrcSummon       = byteString "SUMMON"
+renderCommand IrcUsers        = byteString "USERS"
+renderCommand IrcWallops      = byteString "WALLOPS"
+renderCommand IrcUserhost     = byteString "USERHOST"
+renderCommand IrcIson         = byteString "ISON"
 
-renderArgs :: [ByteString] -> [ByteString]
+renderArgs :: [ByteString] -> [Builder]
 renderArgs [] = []
-renderArgs [x] = [':' `BS.cons` x]
-renderArgs (x:xs) = x : renderArgs xs
+renderArgs [x] = [charUtf8 ':' <> byteString x]
+renderArgs (x:xs) = byteString x : renderArgs xs
+
+unwordsB :: [Builder] -> Builder
+unwordsB = mconcat . intersperse (charUtf8 ' ')
