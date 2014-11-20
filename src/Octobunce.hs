@@ -1,7 +1,5 @@
-module Octobunce
-    ( module Octobunce.Types
-    , module Octobunce.Parser
-    ) where
+module Octobunce where
 
 import Octobunce.Types
 import Octobunce.Parser
+import Octobunce.Render
